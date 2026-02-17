@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const entries = await prisma.Entry.findMany({
+    const entries = await prisma.entry.findMany({
       where: { date },
       orderBy: { createdAt: "asc" },
     });
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const entry = await prisma.Entry.create({
+    const entry = await prisma.entry.create({
       data: {
         name,
         calories: Math.round(calories),
@@ -84,7 +84,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    await prisma.Entry.delete({
+    await prisma.entry.delete({
       where: { id },
     });
     return NextResponse.json({ success: true });
