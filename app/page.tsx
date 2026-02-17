@@ -42,12 +42,27 @@ export default function Home() {
     setError(null);
     try {
       const res = await fetch(`/api/entries?date=${encodeURIComponent(date)}`);
-      if (!res.ok) {
-        throw new Error("Failed to load entries");
+      let data: ApiResponse | { error?: string } | null = null;
+
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
       }
-      const data: ApiResponse = await res.json();
-      setEntries(data.entries);
-      setTotalCalories(data.totalCalories);
+
+      if (!res.ok) {
+        const message =
+          (data as { error?: string } | null)?.error ??
+          "Failed to load entries from the server.";
+        setError(message);
+        setEntries([]);
+        setTotalCalories(0);
+        return;
+      }
+
+      const typed = data as ApiResponse;
+      setEntries(typed.entries);
+      setTotalCalories(typed.totalCalories);
     } catch (err) {
       console.error(err);
       setError("Could not load entries. Please try again.");
