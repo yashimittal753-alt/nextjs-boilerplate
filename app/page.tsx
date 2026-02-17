@@ -1,4 +1,4 @@
-\"use client\";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -17,9 +17,7 @@ type ApiResponse = {
 };
 
 export default function Home() {
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().slice(0, 10),
-  );
+  const [selectedDate, setSelectedDate] = useState<string>("");
   const [entries, setEntries] = useState<Entry[]>([]);
   const [totalCalories, setTotalCalories] = useState<number>(0);
   const [name, setName] = useState("");
@@ -30,6 +28,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   const formattedDate = useMemo(() => {
+    if (!selectedDate) return "";
     return new Date(selectedDate).toLocaleDateString(undefined, {
       weekday: "short",
       year: "numeric",
@@ -58,6 +57,11 @@ export default function Home() {
   }
 
   useEffect(() => {
+    setSelectedDate(new Date().toISOString().slice(0, 10));
+  }, []);
+
+  useEffect(() => {
+    if (!selectedDate) return;
     fetchEntries(selectedDate);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
