@@ -68,12 +68,16 @@ export default function Home() {
 
   async function handleAddEntry(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !calories.trim()) return;
+    if (!name.trim()) return;
 
-    const caloriesNumber = Number(calories);
-    if (Number.isNaN(caloriesNumber) || caloriesNumber <= 0) {
-      setError("Calories must be a positive number.");
-      return;
+    let caloriesNumber: number | null = null;
+    if (calories.trim()) {
+      const parsed = Number(calories);
+      if (Number.isNaN(parsed) || parsed <= 0) {
+        setError("Calories must be a positive number when provided.");
+        return;
+      }
+      caloriesNumber = parsed;
     }
 
     setIsSubmitting(true);
@@ -251,7 +255,7 @@ export default function Home() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">
-                    Calories
+                    Calories (optional)
                   </label>
                   <input
                     type="number"
@@ -259,7 +263,7 @@ export default function Home() {
                     inputMode="numeric"
                     value={calories}
                     onChange={(e) => setCalories(e.target.value)}
-                    placeholder="e.g. 250"
+                    placeholder="Leave empty to auto-estimate"
                     className="h-9 w-full rounded-md border border-zinc-300 bg-white px-2 text-sm text-zinc-900 shadow-sm outline-none focus:border-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50"
                   />
                 </div>

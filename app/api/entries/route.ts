@@ -1,6 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+function estimateCalories(name: string, category?: string | null): number {
+  const lower = name.toLowerCase();
+
+  const keywordMap: { keyword: string; calories: number }[] = [
+    { keyword: "banana", calories: 105 },
+    { keyword: "apple", calories: 95 },
+    { keyword: "orange", calories: 80 },
+    { keyword: "egg", calories: 78 },
+    { keyword: "rice", calories: 200 },
+    { keyword: "bread", calories: 80 },
+    { keyword: "sandwich", calories: 350 },
+    { keyword: "salad", calories: 180 },
+    { keyword: "chicken", calories: 250 },
+    { keyword: "pizza", calories: 285 },
+    { keyword: "pasta", calories: 350 },
+    { keyword: "coffee", calories: 5 },
+    { keyword: "latte", calories: 180 },
+    { keyword: "burger", calories: 500 },
+    { keyword: "fries", calories: 365 },
+    { keyword: "yogurt", calories: 150 },
+    { keyword: "smoothie", calories: 220 },
+    { keyword: "oats", calories: 150 },
+    { keyword: "oatmeal", calories: 150 },
+    { keyword: "protein", calories: 200 },
+  ];
+
+  for (const { keyword, calories } of keywordMap) {
+    if (lower.includes(keyword)) {
+      return calories;
+    }
+  }
+
+  if (category) {
+    const cat = category.toLowerCase();
+    if (cat === "breakfast") return 350;
+    if (cat === "lunch") return 600;
+    if (cat === "dinner") return 650;
+    if (cat === "snack") return 200;
+  }
+
+  return 300;
+}
+
 // GET /api/entries?date=YYYY-MM-DD
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -40,22 +83,30 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, calories, category, date } = body as {
       name?: string;
-      calories?: number;
+      calories?: number | null;
       category?: string | null;
       date?: string;
     };
 
-    if (!name || !date || typeof calories !== "number") {
+    if (!name || !date) {
       return NextResponse.json(
-        { error: "Missing required fields: name, calories, date" },
+        { error: "Missing required fields: name, date" },
         { status: 400 },
       );
+    }
+
+    let caloriesToUse: number;
+
+    if (typeof calories === "number" && calories > 0) {
+      caloriesToUse = Math.round(calories);
+    } else {
+      caloriesToUse = estimateCalories(name, category ?? null);
     }
 
     const entry = await prisma.entry.create({
       data: {
         name,
-        calories: Math.round(calories),
+        calories: caloriesToUse,
         category: category || null,
         date,
       },
